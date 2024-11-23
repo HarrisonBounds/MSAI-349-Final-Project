@@ -35,13 +35,36 @@ test_loader = DataLoader(test_set, batch_size, shuffle=True)
 
 model = CNN(image_width, image_height)
 optimizer = torch.optim.Adam(model.parameters(), lr) #Tune this for potential better results
-loss = nn.CrossEntropyLoss()
+loss_func = nn.CrossEntropyLoss()
 
 #Training Loop
+num_samples_processed = 0
+epoch_loss = 0
+
 for i in range(epochs):
     print(f"Epoch {i}\n=========================")
     model.train()
-    
+    for b, (im, target) in enumerate(train_loader):
+        image, y_true = im.to(DEVICE), target.to(DEVICE)
+        
+        y_pred = model(image)
+        batch_loss = loss_func(y_pred, y_true)
+        
+        optimizer.zero_grad()
+        batch_loss.backward()
+        optimizer.step()
+        
+        num_samples_processed += y_true.shape[0]
+        
+        print(f"Batch Loss: {batch_loss.item()} [{num_samples_processed}/{len(train_loader.dataset)}]")
+        
+        epoch_loss = (epoch_loss * b + batch_loss.item()) / (b + 1)
+        
+        
+        
+        
+        
+        
 
 
 
