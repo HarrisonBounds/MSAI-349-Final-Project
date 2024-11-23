@@ -15,8 +15,10 @@ for class_name in os.listdir(root_dir):
         for file_name in os.listdir(class_dir):
             file_path = os.path.join(class_dir, file_name)
             if os.path.isfile(file_path):  # Ensure it's a file
-                # Append file path and class name as label
-                data.append([file_path, class_name])
+                # Remove the root directory prefix explicitly
+                relative_path = file_path[len(root_dir):]
+                # Append relative path and class name as label
+                data.append([relative_path, class_name])
 
 # Create a DataFrame
 df = pd.DataFrame(data, columns=['file_path', 'label'])

@@ -8,7 +8,6 @@ batch_size = 32
 
 transform = transforms.Compose([
     transforms.Resize((300, 300)),
-    transforms.ToTensor(),
 ])
 
 dataset = CustomImageDataset("sketches.csv", "data", transform)
