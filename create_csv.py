@@ -17,8 +17,10 @@ for class_name in os.listdir(root_dir):
             if os.path.isfile(file_path):  # Ensure it's a file
                 # Remove the root directory prefix explicitly
                 relative_path = file_path[len(root_dir):]
-                # Append relative path and class name as label
-                data.append([relative_path, class_name])
+                # Remove spaces from class_name
+                class_name_cleaned = class_name.replace(" ", "")  # Remove spaces
+                # Append relative path and cleaned class name as label
+                data.append([relative_path, class_name_cleaned])
 
 # Create a DataFrame
 df = pd.DataFrame(data, columns=['file_path', 'label'])
