@@ -15,7 +15,7 @@ class CustomImageDataset(Dataset):
         unique_labels = self.annotations['label'].unique()
         
         for i, label in enumerate(unique_labels):
-            self.label_map[i] = label
+            self.label_map[label] = i
 
     def __len__(self):
         return len(self.annotations)
@@ -28,4 +28,6 @@ class CustomImageDataset(Dataset):
         
         if self.transform:
             image = self.transform(image)
+            
+        image = image.float() #Pytorch expects float for training
         return image, label

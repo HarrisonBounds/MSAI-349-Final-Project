@@ -33,7 +33,7 @@ train_loader = DataLoader(train_set, batch_size, shuffle=True)
 valid_loader = DataLoader(valid_set, batch_size, shuffle=True)
 test_loader = DataLoader(test_set, batch_size, shuffle=True)
 
-model = CNN(image_width, image_height)
+model = CNN(image_width, image_height).to(DEVICE)
 optimizer = torch.optim.Adam(model.parameters(), lr) #Tune this for potential better results
 loss_func = nn.CrossEntropyLoss()
 
