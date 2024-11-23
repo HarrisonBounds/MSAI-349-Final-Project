@@ -9,6 +9,13 @@ class CustomImageDataset(Dataset):
         self.annotations = pd.read_csv(annotations_file)
         self.img_dir = img_dir
         self.transform = transform
+        self.label_map = {}
+        
+        #Encode string labels
+        unique_labels = self.annotations['label'].unique()
+        
+        for i, label in enumerate(unique_labels):
+            self.label_map[i] = label
 
     def __len__(self):
         return len(self.annotations)
@@ -16,7 +23,8 @@ class CustomImageDataset(Dataset):
     def __getitem__(self, idx):
         img_path = os.path.join(self.img_dir, self.annotations.iloc[idx, 0])
         image = read_image(img_path)
-        label = self.annotations.iloc[idx, 1]
+        label_str = self.annotations.iloc[idx, 1]
+        label = self.label_map[label_str]
         
         if self.transform:
             image = self.transform(image)
