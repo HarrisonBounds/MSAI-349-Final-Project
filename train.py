@@ -38,12 +38,13 @@ optimizer = torch.optim.Adam(model.parameters(), lr) #Tune this for potential be
 loss_func = nn.CrossEntropyLoss()
 
 #Training Loop
-num_samples_processed = 0
-epoch_loss = 0
+
 
 for i in range(epochs):
     print(f"Epoch {i}\n=========================")
     model.train()
+    num_samples_processed = 0
+    epoch_loss = 0
     for b, (im, target) in enumerate(train_loader):
         image, y_true = im.to(DEVICE), target.to(DEVICE)
         
