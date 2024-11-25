@@ -18,7 +18,7 @@ test_losses = []
 batch_size = 32
 image_width = 300
 image_height = 300
-lr = 0.001
+lr = 0.01
 epochs = 20
 
 transform = transforms.Compose([
