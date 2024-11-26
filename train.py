@@ -4,6 +4,7 @@ from dataset import CustomImageDataset
 from torch.utils.data import DataLoader
 from cnn import CNN
 import torch.nn as nn
+from sklearn.metrics import accuracy_score, precision_score
 
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -15,7 +16,7 @@ valid_losses = []
 test_losses = []
 
 #Hyperparameters
-batch_size = 32
+batch_size = 64
 image_width = 500
 image_height = 500
 lr = 0.001
@@ -58,6 +59,34 @@ for i in range(epochs):
         print(f"Batch Loss: {batch_loss.item()} [{num_samples_processed}/{len(train_loader.dataset)}]")
         
         epoch_loss = (epoch_loss * b + batch_loss.item()) / (b + 1)
+        
+        
+#Testing Loop
+model.eval()
+
+valid_loss = 0.0
+y_preds = []
+y_trues = []
+
+with torch.no_grad():
+    for image, labels in test_loader:
+        image, y_true = im.to(DEVICE), target.to(DEVICE)
+        
+        y_pred = model(image)
+        loss = loss_func(y_pred, y_true)
+        valid_loss += loss
+        
+        y_trues.append(y_true)
+        y_preds.append(y_pred)
+        
+accuracy = accuracy_score(y_trues, y_preds)
+precision = precision_score(y_trues, y_preds)
+
+print(f"Accuracy of validation set: {accuracy}")
+print(f"Precision of validation set: {precision}")               
+        
+        
+
         
         
         
