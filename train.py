@@ -16,10 +16,10 @@ test_losses = []
 
 #Hyperparameters
 batch_size = 32
-image_width = 300
-image_height = 300
-lr = 0.01
-epochs = 20
+image_width = 500
+image_height = 500
+lr = 0.001
+epochs = 5
 
 transform = transforms.Compose([
     transforms.Resize((image_width, image_height)),
@@ -38,8 +38,6 @@ optimizer = torch.optim.Adam(model.parameters(), lr) #Tune this for potential be
 loss_func = nn.CrossEntropyLoss()
 
 #Training Loop
-
-
 for i in range(epochs):
     print(f"Epoch {i}\n=========================")
     model.train()
