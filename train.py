@@ -7,7 +7,7 @@ import torch.nn as nn
 from PIL import Image
 from tqdm import tqdm
 # from sketch_interface import Interface
-
+from sklearn.metrics import accuracy_score, precision_score
 
 # Interface = Interface()
 # Interface.draw()
@@ -20,12 +20,12 @@ train_losses = []
 valid_losses = []
 test_losses = []
 
-# Hyperparameters
-batch_size = 32
-image_width = 300
-image_height = 300
+#Hyperparameters
+batch_size = 64
+image_width = 500
+image_height = 500
 lr = 0.001
-epochs = 2
+epochs = 5
 
 # Loading and pre-processing data
 transform = transforms.Compose([
@@ -46,7 +46,7 @@ loss_func = nn.CrossEntropyLoss()
 
 # Training Loop
 for i in tqdm(range(epochs)):
-    # print(f"Epoch {i}\n=========================")
+    print(f"Epoch {i}\n=========================")
     model.train()
     num_samples_processed = 0
     epoch_loss = 0
@@ -68,6 +68,39 @@ for i in tqdm(range(epochs)):
 # Save the final model.
 torch.save(model.state_dict(), "final_model.pth")
 print("Final model saved to 'final_model.pth'")
+       
+        
+#Testing Loop
+model.eval()
+
+valid_loss = 0.0
+y_preds = []
+y_trues = []
+
+with torch.no_grad():
+    for image, labels in test_loader:
+        image, y_true = im.to(DEVICE), target.to(DEVICE)
+        
+        y_pred = model(image)
+        loss = loss_func(y_pred, y_true)
+        valid_loss += loss
+        
+        y_trues.append(y_true)
+        y_preds.append(y_pred)
+        
+accuracy = accuracy_score(y_trues, y_preds)
+precision = precision_score(y_trues, y_preds)
+
+print(f"Accuracy of validation set: {accuracy}")
+print(f"Precision of validation set: {precision}")               
+        
+        
+
+        
+        
+        
+        
+       
 
 # Validation loop
 # Visualisation section
