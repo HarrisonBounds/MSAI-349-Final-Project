@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import torch
+from PIL import Image
 from torchvision.io import read_image
 from torch.utils.data import Dataset
 
@@ -22,7 +23,7 @@ class CustomImageDataset(Dataset):
 
     def __getitem__(self, idx):
         img_path = os.path.join(self.img_dir, self.annotations.iloc[idx, 0])
-        image = read_image(img_path)
+        image = Image.open(img_path).convert("L")
         label_str = self.annotations.iloc[idx, 1]
         label = self.label_map[label_str]
         

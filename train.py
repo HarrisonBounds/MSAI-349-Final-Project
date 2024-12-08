@@ -21,7 +21,7 @@ valid_losses = []
 test_losses = []
 
 #Hyperparameters
-batch_size = 64
+batch_size = 16
 image_width = 500
 image_height = 500
 lr = 0.001
@@ -30,6 +30,8 @@ epochs = 5
 # Loading and pre-processing data
 transform = transforms.Compose([
     transforms.Resize((image_width, image_height)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.5], std=[0.5])
 ])
 
 dataset = CustomImageDataset("sketches.csv", "data", transform)
@@ -45,12 +47,12 @@ optimizer = torch.optim.Adam(model.parameters(), lr)
 loss_func = nn.CrossEntropyLoss()
 
 # Training Loop
-for i in tqdm(range(epochs)):
-    print(f"Epoch {i}\n=========================")
+for i in range(epochs):
+    print(f"Epoch {i+1}\n=========================")
     model.train()
     num_samples_processed = 0
     epoch_loss = 0
-    for b, (im, target) in tqdm(enumerate(train_loader), total=len(train_loader), leave=False):
+    for b, (im, target) in enumerate(train_loader):
         image, y_true = im.to(DEVICE), target.to(DEVICE)
 
         y_pred = model(image)
@@ -59,9 +61,10 @@ for i in tqdm(range(epochs)):
         optimizer.zero_grad()
         batch_loss.backward()
         optimizer.step()
+    
 
         num_samples_processed += y_true.shape[0]
-        # print(f"Batch Loss: {batch_loss.item()} [{num_samples_processed}/{len(train_loader.dataset)}]")
+        print(f"Batch Loss: {batch_loss.item()} [{num_samples_processed}/{len(train_loader.dataset)}]")
         epoch_loss = (epoch_loss * b + batch_loss.item()) / (b + 1)
         torch.save(model.state_dict(), f"model_epoch_{i}.pth")
 
@@ -78,12 +81,12 @@ y_preds = []
 y_trues = []
 
 with torch.no_grad():
-    for image, labels in test_loader:
+    for image, labels in valid_loader:
         image, y_true = im.to(DEVICE), target.to(DEVICE)
         
         y_pred = model(image)
         loss = loss_func(y_pred, y_true)
-        valid_loss += loss
+        valid_loss += loss.item()
         
         y_trues.append(y_true)
         y_preds.append(y_pred)
