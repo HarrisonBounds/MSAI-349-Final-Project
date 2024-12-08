@@ -26,3 +26,10 @@ Epoch 3/5, Loss: 3.6277
 Epoch 4/5, Loss: 2.4499
 Epoch 5/5, Loss: 1.0384
 
+2 CL, 3 FC (FC Much larger # of neurons), 120x120, lr=0.001
+Epoch 1/5, Loss: 5.3776
+Epoch 2/5, Loss: 3.9337
+Epoch 3/5, Loss: 2.3468
+Epoch 4/5, Loss: 0.6054
+Epoch 5/5, Loss: 0.1346
+

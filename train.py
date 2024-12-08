@@ -6,6 +6,7 @@ from cnn import CNN
 import torch.nn as nn
 from PIL import Image
 from tqdm import tqdm
+from datetime import datetime
 # from sketch_interface import Interface
 from sklearn.metrics import accuracy_score, precision_score
 
@@ -20,12 +21,12 @@ train_losses = []
 valid_losses = []
 test_losses = []
 
-resize_width = 150
-resize_height = 150
+resize_width = 120
+resize_height = 120
 #Hyperparameters
 batch_size = 16
 lr = 0.001
-epochs = 5
+epochs = 10
 
 # Loading and pre-processing data
 transform = transforms.Compose([
@@ -36,15 +37,15 @@ transform = transforms.Compose([
 ])
 
 dataset = datasets.ImageFolder("data", transform=transform)
-#train_set, valid_set = torch.utils.data.random_split(dataset, [0.75, 0.25])
+train_set, valid_set = torch.utils.data.random_split(dataset, [0.75, 0.25])
 test_image = "user_sketch.png"
 
-train_loader = DataLoader(dataset, batch_size, shuffle=True)
-#valid_loader = DataLoader(valid_set, batch_size, shuffle=True)
+train_loader = DataLoader(train_set, batch_size, shuffle=True)
+valid_loader = DataLoader(valid_set, batch_size, shuffle=True)
 
 model = CNN(resize_width, resize_height).to(DEVICE)
 # Tune this for potential better results
-criterion = nn.CrossEntropyLoss()
+loss_func = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
 # Training loop
@@ -60,7 +61,7 @@ for epoch in range(epochs):
 
         # Forward pass
         outputs = model(images)
-        loss = criterion(outputs, labels)
+        loss = loss_func(outputs, labels)
 
         # Backward pass and optimization
         loss.backward()
@@ -70,43 +71,36 @@ for epoch in range(epochs):
 
     print(f"Epoch {epoch+1}/{epochs}, Loss: {running_loss / len(train_loader):.4f}")
 
+now = datetime.now()
+formatted_time = now.strftime("%Y-%m-%d %H:%M:%S")
 # Save the trained model
-torch.save(model.state_dict(), 'sketch_cnn.pth')
-
+torch.save(model.state_dict(), f'models/{formatted_time}_sketch_cnn.pth')
 print("Training complete and model saved.")
-       
+      
         
-# #Testing Loop
-# model.eval()
+#Validation Set Loop
+model.eval()
 
-# valid_loss = 0.0
-# y_preds = []
-# y_trues = []
+valid_loss = 0.0
+y_preds = []
+y_trues = []
 
-# with torch.no_grad():
-#     for image, labels in valid_loader:
-#         image, y_true = im.to(DEVICE), target.to(DEVICE)
+with torch.no_grad():
+    for image, labels in valid_loader:
+        image, y_true = image.to(DEVICE), labels.to(DEVICE)
         
-#         y_pred = model(image)
-#         loss = loss_func(y_pred, y_true)
-#         valid_loss += loss.item()
+        y_pred = model(image)
+        loss = loss_func(y_pred, y_true)
+        valid_loss += loss.item()
         
-#         y_trues.append(y_true)
-#         y_preds.append(y_pred)
+        y_trues.append(y_true)
+        y_preds.append(y_pred)
         
-# accuracy = accuracy_score(y_trues, y_preds)
-# precision = precision_score(y_trues, y_preds)
+accuracy = accuracy_score(y_trues, y_preds)
+precision = precision_score(y_trues, y_preds)
 
-# print(f"Accuracy of validation set: {accuracy}")
-# print(f"Precision of validation set: {precision}")               
-        
-        
-
-        
-        
-        
-        
-       
+print(f"Accuracy of validation set: {accuracy}")
+print(f"Precision of validation set: {precision}")               
 
 # # Validation loop
 # # Visualisation section
