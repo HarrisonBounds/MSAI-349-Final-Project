@@ -4,6 +4,7 @@ from dataset import CustomImageDataset
 from torch.utils.data import DataLoader
 from cnn import CNN
 import torch.nn as nn
+import numpy as np
 from PIL import Image
 from tqdm import tqdm
 from datetime import datetime
@@ -26,7 +27,7 @@ resize_height = 120
 #Hyperparameters
 batch_size = 16
 lr = 0.001
-epochs = 10
+epochs = 1
 
 # Loading and pre-processing data
 transform = transforms.Compose([
@@ -76,8 +77,7 @@ formatted_time = now.strftime("%Y-%m-%d %H:%M:%S")
 # Save the trained model
 torch.save(model.state_dict(), f'models/{formatted_time}_sketch_cnn.pth')
 print("Training complete and model saved.")
-      
-        
+
 #Validation Set Loop
 model.eval()
 
@@ -93,13 +93,17 @@ with torch.no_grad():
         loss = loss_func(y_pred, y_true)
         valid_loss += loss.item()
         
-        y_trues.append(y_true)
-        y_preds.append(y_pred)
+        y_pred = torch.argmax(y_pred, dim=1)
         
-accuracy = accuracy_score(y_trues, y_preds)
-precision = precision_score(y_trues, y_preds)
+        y_trues.append(y_true.cpu().numpy())
+        y_preds.append(y_pred.cpu().numpy())
+        
+y_trues = np.concatenate(y_trues)  # Flatten list of arrays
+y_preds = np.concatenate(y_preds)  # Flatten list of arrays
 
+accuracy = accuracy_score(y_trues, y_preds)
 print(f"Accuracy of validation set: {accuracy}")
+precision = precision_score(y_trues, y_preds, average='weighted')
 print(f"Precision of validation set: {precision}")               
 
 # # Validation loop
