@@ -1,15 +1,13 @@
 import torch
 from torchvision import transforms, datasets
-from dataset import CustomImageDataset
 from torch.utils.data import DataLoader
 from cnn import CNN
 import torch.nn as nn
 import numpy as np
-from PIL import Image
-from tqdm import tqdm
 from datetime import datetime
 # from sketch_interface import Interface
 from sklearn.metrics import accuracy_score, precision_score
+import matplotlib.pyplot as plt
 
 # Interface = Interface()
 # Interface.draw()
@@ -27,7 +25,7 @@ resize_height = 120
 #Hyperparameters
 batch_size = 16
 lr = 0.001
-epochs = 1
+epochs = 10
 
 # Loading and pre-processing data
 transform = transforms.Compose([
@@ -48,6 +46,8 @@ model = CNN(resize_width, resize_height).to(DEVICE)
 # Tune this for potential better results
 loss_func = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
+
 
 # Training loop
 for epoch in range(epochs):
@@ -69,6 +69,8 @@ for epoch in range(epochs):
         optimizer.step()
 
         running_loss += loss.item()
+        
+    scheduler.step()
 
     print(f"Epoch {epoch+1}/{epochs}, Loss: {running_loss / len(train_loader):.4f}")
 
@@ -104,7 +106,16 @@ y_preds = np.concatenate(y_preds)  # Flatten list of arrays
 accuracy = accuracy_score(y_trues, y_preds)
 print(f"Accuracy of validation set: {accuracy}")
 precision = precision_score(y_trues, y_preds, average='weighted')
-print(f"Precision of validation set: {precision}")               
+print(f"Precision of validation set: {precision}")
+
+pilot_title = f'{model._get_name()}-{epochs}epochs-{lr}lr: {formatted_time}'
+plt.plot(range(epochs), train_losses, 'b--', label='Training')
+plt.plot(range(epochs), test_losses, 'orange', label='Test')
+plt.xlabel('Epoch')
+plt.ylabel('Multi Class Cross Entropy Loss')
+plt.legend()
+plt.title(pilot_title)
+plt.savefig(f'models/{pilot_title}.png')           
 
 # # Validation loop
 # # Visualisation section
