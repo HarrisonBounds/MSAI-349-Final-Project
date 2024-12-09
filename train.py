@@ -30,13 +30,15 @@ epochs = 10
 # Loading and pre-processing data
 transform = transforms.Compose([
     transforms.Resize((resize_width, resize_height)),
+    transforms.RandomHorizontalFlip(p=0.5),
+    transforms.RandomVerticalFlip(p=0.5),
     transforms.Grayscale(num_output_channels=1),
     transforms.ToTensor(),
-    transforms.Normalize(mean=[0.5], std=[0.5])
+    transforms.Normalize(mean=[0.5], std=[0.5],)
 ])
 
 dataset = datasets.ImageFolder("data", transform=transform)
-train_set, valid_set = torch.utils.data.random_split(dataset, [0.75, 0.25])
+train_set, valid_set = torch.utils.data.random_split(dataset, [0.85, 0.15])
 test_image = "user_sketch.png"
 
 train_loader = DataLoader(train_set, batch_size, shuffle=True)
@@ -69,6 +71,7 @@ for epoch in range(epochs):
         optimizer.step()
 
         running_loss += loss.item()
+        train_losses.append(loss.item())
         
     scheduler.step()
 
@@ -94,6 +97,7 @@ with torch.no_grad():
         y_pred = model(image)
         loss = loss_func(y_pred, y_true)
         valid_loss += loss.item()
+        valid_losses.append(loss.item())
         
         y_pred = torch.argmax(y_pred, dim=1)
         
