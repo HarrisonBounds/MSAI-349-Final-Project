@@ -1,13 +1,13 @@
 import torch
-from torchvision import transforms
-from dataset import CustomImageDataset
+from torchvision import transforms, datasets
 from torch.utils.data import DataLoader
 from cnn import CNN
 import torch.nn as nn
-from PIL import Image
-from tqdm import tqdm
+import numpy as np
+from datetime import datetime
 # from sketch_interface import Interface
 from sklearn.metrics import accuracy_score, precision_score
+import matplotlib.pyplot as plt
 
 # Interface = Interface()
 # Interface.draw()
@@ -20,119 +20,148 @@ train_losses = []
 valid_losses = []
 test_losses = []
 
+resize_width = 120
+resize_height = 120
 #Hyperparameters
-batch_size = 64
-image_width = 500
-image_height = 500
+batch_size = 32
 lr = 0.001
-epochs = 5
+epochs = 15
 
 # Loading and pre-processing data
 transform = transforms.Compose([
-    transforms.Resize((image_width, image_height)),
+    transforms.Resize((resize_width, resize_height)),
+    transforms.Grayscale(num_output_channels=1),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.5], std=[0.5],)
 ])
 
-dataset = CustomImageDataset("sketches.csv", "data", transform)
-train_set, valid_set = torch.utils.data.random_split(dataset, [0.75, 0.25])
+dataset = datasets.ImageFolder("data", transform=transform)
+train_set, valid_set = torch.utils.data.random_split(dataset, [0.85, 0.15])
 test_image = "user_sketch.png"
 
 train_loader = DataLoader(train_set, batch_size, shuffle=True)
 valid_loader = DataLoader(valid_set, batch_size, shuffle=True)
 
-model = CNN(image_width, image_height).to(DEVICE)
+model = CNN(resize_width, resize_height).to(DEVICE)
 # Tune this for potential better results
-optimizer = torch.optim.Adam(model.parameters(), lr)
 loss_func = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 
-# Training Loop
-for i in tqdm(range(epochs)):
-    print(f"Epoch {i}\n=========================")
-    model.train()
-    num_samples_processed = 0
-    epoch_loss = 0
-    for b, (im, target) in tqdm(enumerate(train_loader), total=len(train_loader), leave=False):
-        image, y_true = im.to(DEVICE), target.to(DEVICE)
+with open('training_metrics.txt', 'a') as f:
+    f.write("Epoch, Train Loss, Accuracy, Precision\n")
 
-        y_pred = model(image)
-        batch_loss = loss_func(y_pred, y_true)
+    # Training loop
+    for epoch in range(epochs):
+        model.train()  # Set the model to training mode
+        running_loss = 0.0
 
-        optimizer.zero_grad()
-        batch_loss.backward()
-        optimizer.step()
+        for images, labels in train_loader:
+            images, labels = images.to(DEVICE), labels.to(DEVICE)
 
-        num_samples_processed += y_true.shape[0]
-        # print(f"Batch Loss: {batch_loss.item()} [{num_samples_processed}/{len(train_loader.dataset)}]")
-        epoch_loss = (epoch_loss * b + batch_loss.item()) / (b + 1)
-        torch.save(model.state_dict(), f"model_epoch_{i}.pth")
+            # Zero the parameter gradients
+            optimizer.zero_grad()
 
-# Save the final model.
-torch.save(model.state_dict(), "final_model.pth")
-print("Final model saved to 'final_model.pth'")
-       
+            # Forward pass
+            outputs = model(images)
+            loss = loss_func(outputs, labels)
+
+            # Backward pass and optimization
+            loss.backward()
+            optimizer.step()
+
+            running_loss += loss.item()
+            
+        train_losses.append(loss.item())
         
-#Testing Loop
-model.eval()
+        f.write(f"{epoch+1}, Train Loss: {loss.item():.4f}\n")
 
-valid_loss = 0.0
-y_preds = []
-y_trues = []
+        scheduler.step()
 
-with torch.no_grad():
-    for image, labels in test_loader:
-        image, y_true = im.to(DEVICE), target.to(DEVICE)
-        
-        y_pred = model(image)
-        loss = loss_func(y_pred, y_true)
-        valid_loss += loss
-        
-        y_trues.append(y_true)
-        y_preds.append(y_pred)
-        
-accuracy = accuracy_score(y_trues, y_preds)
-precision = precision_score(y_trues, y_preds)
+        print(f"Epoch {epoch+1}/{epochs}, Loss: {running_loss / len(train_loader):.4f}")
 
-print(f"Accuracy of validation set: {accuracy}")
-print(f"Precision of validation set: {precision}")               
-        
-        
+    now = datetime.now()
+    formatted_time = now.strftime("%Y-%m-%d %H:%M:%S")
+    # Save the trained model
+    torch.save(model.state_dict(), f'models/{formatted_time}_sketch_cnn.pth')
+    print("Training complete and model saved.")
 
-        
-        
-        
-        
-       
+    #Validation Set Loop
+    model.eval()
 
-# Validation loop
-# Visualisation section
+    valid_loss = 0.0
+    y_preds = []
+    y_trues = []
 
-# Testing loop
+    
+    with torch.no_grad():
+        for image, labels in valid_loader:
+            image, y_true = image.to(DEVICE), labels.to(DEVICE)
+            
+            y_pred = model(image)
+            loss = loss_func(y_pred, y_true)
+            valid_loss += loss.item()
+            
+            y_pred = torch.argmax(y_pred, dim=1)
+            
+            y_trues.append(y_true.cpu().numpy())
+            y_preds.append(y_pred.cpu().numpy())
+            
+            f.write(f"Valid Loss: {loss.item()}\n")
+            
+    valid_losses.append(valid_loss / len(valid_loader))
+            
+    y_trues = np.concatenate(y_trues)  # Flatten list of arrays
+    y_preds = np.concatenate(y_preds)  # Flatten list of arrays
 
-test_transform = transforms.Compose([
-    # Resize to model's input size
-    transforms.Resize((image_width, image_height)),
-    transforms.ToTensor(),  # Convert PIL to tensor
-])
+    accuracy = accuracy_score(y_trues, y_preds)
+    print(f"Accuracy of validation set: {accuracy}")
+    precision = precision_score(y_trues, y_preds, average='weighted')
+    print(f"Precision of validation set: {precision}")
 
-# Load the trained model
-model.load_state_dict(torch.load("final_model.pth"))
-model.eval()  # Set the model to evaluation mode
-print("testing loop...")
-# Process the image and make a prediction
-with torch.no_grad():  # Disable gradient computation for inference
-    # Load and preprocess the image
-    image = Image.open(test_image).convert("L")
-    image = test_transform(image)
-    # Add one axis to the batch dimension
-    image = image.unsqueeze(0).to(DEVICE)
+    
+    f.write(f"Accuracy: {accuracy}\nPrecision: {precision}")
 
-    # Get the model's prediction
-    output = model(image)
-    # Get the class index with the highest score
-    predicted_label = torch.argmax(output, dim=1).item()
-    print(f"Predicted Label for '{test_image}': {predicted_label} : ")
+    pilot_title = f'{model._get_name()}-{epochs}epochs-{lr}lr: {formatted_time}'
+    plt.plot(range(epochs), train_losses, 'b--', label='Training')
+    plt.plot(range(epochs), valid_losses, 'orange', label='Validation')
+    plt.xlabel('Epoch')
+    plt.ylabel('Multi Class Cross Entropy Loss')
+    plt.legend()
+    plt.title(pilot_title)
+    plt.savefig(f'models/{pilot_title}.png')           
 
-    for key, value in dataset.label_map.items():
-        if value == predicted_label:
-            key_for_value = key
-            print(f"the image is of : {key}")
-            break
+# # Validation loop
+# # Visualisation section
+
+# # Testing loop
+
+# test_transform = transforms.Compose([
+#     # Resize to model's input size
+#     transforms.Resize((image_width, image_height)),
+#     transforms.ToTensor(),  # Convert PIL to tensor
+# ])
+
+# # Load the trained model
+# model.load_state_dict(torch.load("final_model.pth"))
+# model.eval()  # Set the model to evaluation mode
+# print("testing loop...")
+# # Process the image and make a prediction
+# with torch.no_grad():  # Disable gradient computation for inference
+#     # Load and preprocess the image
+#     image = Image.open(test_image).convert("L")
+#     image = test_transform(image)
+#     # Add one axis to the batch dimension
+#     image = image.unsqueeze(0).to(DEVICE)
+
+#     # Get the model's prediction
+#     output = model(image)
+#     # Get the class index with the highest score
+#     predicted_label = torch.argmax(output, dim=1).item()
+#     print(f"Predicted Label for '{test_image}': {predicted_label} : ")
+
+#     for key, value in dataset.label_map.items():
+#         if value == predicted_label:
+#             key_for_value = key
+#             print(f"the image is of : {key}")
+#             break

@@ -1,0 +1,47 @@
+2 CL, 2 FC, 28x28, lr=0.001
+Epoch 1/5, Loss: 5.5249
+Epoch 2/5, Loss: 5.5238
+Epoch 3/5, Loss: 5.5236
+Epoch 4/5, Loss: 5.5235
+Epoch 5/5, Loss: 5.5234
+
+2 CL, 3 FC, 28x28, lr=0.001
+Epoch 1/5, Loss: 5.5250
+Epoch 2/5, Loss: 5.5239
+Epoch 3/5, Loss: 5.5235
+Epoch 4/5, Loss: 5.5234
+Epoch 5/5, Loss: 5.5233
+
+2 CL, 3 FC (FC Much larger # of neurons) 28x28, lr=0.001
+Epoch 1/5, Loss: 5.5243
+Epoch 2/5, Loss: 5.5234
+Epoch 3/5, Loss: 5.5234
+Epoch 4/5, Loss: 5.5233
+Epoch 5/5, Loss: 5.5233
+
+2 CL, 3 FC (FC Much larger # of neurons), 100x100, lr=0.001
+Epoch 1/5, Loss: 5.5333
+Epoch 2/5, Loss: 4.9679
+Epoch 3/5, Loss: 3.6277
+Epoch 4/5, Loss: 2.4499
+Epoch 5/5, Loss: 1.0384
+
+2 CL, 3 FC (FC Much larger # of neurons), 120x120, lr=0.001
+Epoch 1/5, Loss: 5.3776
+Epoch 2/5, Loss: 3.9337
+Epoch 3/5, Loss: 2.3468
+Epoch 4/5, Loss: 0.6054
+Epoch 5/5, Loss: 0.1346
+
+2 CL, 3 FC (FC Much larger # of neurons), 120x120, lr=0.001 *decrease lr with time
+Epoch 1/10, Loss: 5.5049
+Epoch 2/10, Loss: 4.4435
+Epoch 3/10, Loss: 3.0272
+Epoch 4/10, Loss: 0.9356
+Epoch 5/10, Loss: 0.1484
+Epoch 6/10, Loss: 0.0538
+Epoch 7/10, Loss: 0.0322
+Epoch 8/10, Loss: 0.0607
+Epoch 9/10, Loss: 0.0516
+Epoch 10/10, Loss: 0.0495
+
