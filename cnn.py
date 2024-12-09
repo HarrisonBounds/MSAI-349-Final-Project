@@ -20,7 +20,7 @@ class CNN(nn.Module):
         self.fc2 = nn.Linear(512, 360)
         self.fc3 = nn.Linear(360, 250)
         
-        self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(0.2)
         self.relu = nn.ReLU()
         self.flatten = nn.Flatten()
         
