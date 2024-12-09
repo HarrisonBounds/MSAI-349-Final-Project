@@ -23,15 +23,13 @@ test_losses = []
 resize_width = 120
 resize_height = 120
 #Hyperparameters
-batch_size = 16
+batch_size = 32
 lr = 0.001
-epochs = 10
+epochs = 15
 
 # Loading and pre-processing data
 transform = transforms.Compose([
     transforms.Resize((resize_width, resize_height)),
-    transforms.RandomHorizontalFlip(p=0.5),
-    transforms.RandomVerticalFlip(p=0.5),
     transforms.Grayscale(num_output_channels=1),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.5], std=[0.5],)
@@ -50,32 +48,37 @@ loss_func = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 
+with open('training_metrics.txt', 'w') as f:
+    f.write("Epoch, Train Loss, Accuracy, Precision\n")
 
-# Training loop
-for epoch in range(epochs):
-    model.train()  # Set the model to training mode
-    running_loss = 0.0
+    # Training loop
+    for epoch in range(epochs):
+        model.train()  # Set the model to training mode
+        running_loss = 0.0
 
-    for images, labels in train_loader:
-        images, labels = images.to(DEVICE), labels.to(DEVICE)
+        for images, labels in train_loader:
+            images, labels = images.to(DEVICE), labels.to(DEVICE)
 
-        # Zero the parameter gradients
-        optimizer.zero_grad()
+            # Zero the parameter gradients
+            optimizer.zero_grad()
 
-        # Forward pass
-        outputs = model(images)
-        loss = loss_func(outputs, labels)
+            # Forward pass
+            outputs = model(images)
+            loss = loss_func(outputs, labels)
 
-        # Backward pass and optimization
-        loss.backward()
-        optimizer.step()
+            # Backward pass and optimization
+            loss.backward()
+            optimizer.step()
 
-        running_loss += loss.item()
+            running_loss += loss.item()
+            
         train_losses.append(loss.item())
         
-    scheduler.step()
+        f.write(f"{epoch+1}, Train Loss: {loss.item():.4f}\n")
 
-    print(f"Epoch {epoch+1}/{epochs}, Loss: {running_loss / len(train_loader):.4f}")
+        scheduler.step()
+
+        print(f"Epoch {epoch+1}/{epochs}, Loss: {running_loss / len(train_loader):.4f}")
 
 now = datetime.now()
 formatted_time = now.strftime("%Y-%m-%d %H:%M:%S")
@@ -97,12 +100,15 @@ with torch.no_grad():
         y_pred = model(image)
         loss = loss_func(y_pred, y_true)
         valid_loss += loss.item()
-        valid_losses.append(loss.item())
         
         y_pred = torch.argmax(y_pred, dim=1)
         
         y_trues.append(y_true.cpu().numpy())
         y_preds.append(y_pred.cpu().numpy())
+        
+    f.write(f"Valid Loss: {loss.item()}\n")
+        
+valid_losses.append(valid_loss / len(valid_loader))
         
 y_trues = np.concatenate(y_trues)  # Flatten list of arrays
 y_preds = np.concatenate(y_preds)  # Flatten list of arrays
@@ -112,9 +118,11 @@ print(f"Accuracy of validation set: {accuracy}")
 precision = precision_score(y_trues, y_preds, average='weighted')
 print(f"Precision of validation set: {precision}")
 
+f.write(f"Accuracy: {accuracy}\nPrecision: {precision}")
+
 pilot_title = f'{model._get_name()}-{epochs}epochs-{lr}lr: {formatted_time}'
 plt.plot(range(epochs), train_losses, 'b--', label='Training')
-plt.plot(range(epochs), test_losses, 'orange', label='Test')
+plt.plot(range(epochs), valid_losses, 'orange', label='Validation')
 plt.xlabel('Epoch')
 plt.ylabel('Multi Class Cross Entropy Loss')
 plt.legend()

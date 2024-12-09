@@ -16,10 +16,11 @@ class CNN(nn.Module):
         
         fc_input = size_2[0] * size_2[1] * 64
         
-        self.fc1 = nn.Linear(fc_input, 1280)
-        self.fc2 = nn.Linear(1280, 640)
-        self.fc3 = nn.Linear(640, 250)
-
+        self.fc1 = nn.Linear(fc_input, 512)
+        self.fc2 = nn.Linear(512, 360)
+        self.fc3 = nn.Linear(360, 250)
+        
+        self.dropout = nn.Dropout(0.5)
         self.relu = nn.ReLU()
         self.flatten = nn.Flatten()
         
@@ -29,7 +30,9 @@ class CNN(nn.Module):
     
        x = self.flatten(x)
        x = self.relu(self.fc1(x))
+       x = self.dropout(x)
        x = self.relu(self.fc2(x))
+       x = self.dropout(x)
        x = self.fc3(x)
        
        return x         
