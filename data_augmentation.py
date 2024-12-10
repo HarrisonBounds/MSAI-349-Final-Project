@@ -1,5 +1,3 @@
-import torch
-import math
 from PIL import Image
 import os
 
