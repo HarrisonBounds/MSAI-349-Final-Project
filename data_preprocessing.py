@@ -4,8 +4,8 @@ from PIL import Image
 import os
 
 # Take data file as input
-# input_file = "path/to/your/image.png"  # Replace with your image path
-input_folder_name = "modTest"  #mnist/trainingSet
+input_folder_name = "mnist_data/trainingSet/trainingSet"  #for mnist data
+# input_folder_name = "data"  #for data folder
 
 # Create the modified folder.
 modified_folder_name = f"modified_{input_folder_name}"
