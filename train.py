@@ -22,7 +22,7 @@ test_losses = []
 
 resize_width = 120
 resize_height = 120
-#Hyperparameters
+# Hyperparameters
 batch_size = 64
 lr = 0.001
 epochs = 20
@@ -71,66 +71,65 @@ with open('training_metrics.txt', 'a') as f:
             optimizer.step()
 
             running_loss += loss.item()
-            
+
         train_losses.append(loss.item())
-        
+
         f.write(f"{epoch+1}, Train Loss: {loss.item():.4f}\n")
 
         scheduler.step()
 
-        print(f"Epoch {epoch+1}/{epochs}, Loss: {running_loss / len(train_loader):.4f}")
-        
-        #Validation Set Loop
+        print(
+            f"Epoch {epoch+1}/{epochs}, Loss: {running_loss / len(train_loader):.4f}")
+
+        # Validation Set Loop
         model.eval()
 
         valid_loss = 0.0
         y_preds = []
         y_trues = []
 
-        
         with torch.no_grad():
             for image, labels in valid_loader:
                 image, y_true = image.to(DEVICE), labels.to(DEVICE)
-                
+
                 y_pred = model(image)
                 loss = loss_func(y_pred, y_true)
                 valid_loss += loss.item()
-                
+
                 y_pred = torch.argmax(y_pred, dim=1)
-                
+
                 y_trues.append(y_true.cpu().numpy())
                 y_preds.append(y_pred.cpu().numpy())
-                
+
                 f.write(f"Valid Loss: {loss.item()}\n")
-                
+
         valid_losses.append(valid_loss / len(valid_loader))
-                
+
         y_trues = np.concatenate(y_trues)  # Flatten list of arrays
         y_preds = np.concatenate(y_preds)  # Flatten list of arrays
-        
+
     now = datetime.now()
     formatted_time = now.strftime("%Y-%m-%d %H:%M:%S")
     # Save the trained model
     torch.save(model.state_dict(), f'models/{formatted_time}_sketch_cnn.pth')
     print("Training complete and model saved.")
 
-
     accuracy = accuracy_score(y_trues, y_preds)
     print(f"Accuracy of validation set: {accuracy}")
     precision = precision_score(y_trues, y_preds, average='weighted')
     print(f"Precision of validation set: {precision}")
 
-    
     f.write(f"Accuracy: {accuracy}\nPrecision: {precision}")
 
-    pilot_title = f'{model._get_name()}-{epochs}epochs-{lr}lr: accuracy: {accuracy}, precision: {precision}: {formatted_time}'
+    pilot_title = f'{model._get_name()}-{epochs}epochs-{lr}lr: accuracy: {
+        accuracy}, precision: {precision}: {formatted_time}'
     plt.plot(range(epochs), train_losses, 'b--', label='Training')
     plt.plot(range(epochs), valid_losses, 'orange', label='Validation')
     plt.xlabel('Epoch')
     plt.ylabel('Multi Class Cross Entropy Loss')
     plt.legend()
     plt.title(pilot_title)
-    plt.savefig(f'models/{pilot_title}.png')           
+    plt.savefig(f'models/{pilot_title}.png')
 
 # # Validation loop
 # # Visualisation section
