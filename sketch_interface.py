@@ -44,11 +44,5 @@ class Interface():
             screen.blit(canvas, (0, 0))
             pygame.display.flip()
 
-
-
-        # To do:
-        # 1. format the png in form of CNN input
-        # 2. CLEAR feature
-
 interface = Interface()
 interface.draw()
