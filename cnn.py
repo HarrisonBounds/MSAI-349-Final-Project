@@ -23,12 +23,12 @@ class CNN(nn.Module):
 
         fc_input = size_2_pool[0] * size_2_pool[1] * 64
 
-        self.fc1 = nn.Linear(fc_input, 960)
-        self.fc2 = nn.Linear(960, 512)
+        self.fc1 = nn.Linear(fc_input, 1024)
+        self.fc2 = nn.Linear(1024, 512)
         self.fc3 = nn.Linear(512, 250)
-        self.fc4 = nn.Linear(250, 250)
+        # self.fc4 = nn.Linear(250, 250)
 
-        self.dropout = nn.Dropout(0.3)
+        self.dropout = nn.Dropout(0.5)
         self.relu = nn.LeakyReLU()
         self.flatten = nn.Flatten()
 
@@ -43,8 +43,9 @@ class CNN(nn.Module):
         x = self.dropout(x)
         x = self.relu(self.fc2(x))
         x = self.dropout(x)
-        x = self.relu(self.fc3(x))
-        x = self.dropout(x)
-        x = self.fc4(x)
+        x = self.fc3(x)
+
+        # x = self.dropout(x)
+        # x = self.fc4(x)
 
         return x

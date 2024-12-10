@@ -122,7 +122,7 @@ with open('training_metrics.txt', 'a') as f:
     f.write(f"Accuracy: {accuracy}\nPrecision: {precision}")
 
     pilot_title = f'{model._get_name()}-{epochs}epochs-{lr}lr: accuracy: {
-        accuracy}, precision: {precision}: {formatted_time}'
+        accuracy:.2f}, precision: {precision:.2f}: {formatted_time}'
     plt.plot(range(epochs), train_losses, 'b--', label='Training')
     plt.plot(range(epochs), valid_losses, 'orange', label='Validation')
     plt.xlabel('Epoch')
