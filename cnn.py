@@ -24,7 +24,7 @@ class CNN(nn.Module):
         self.fc2 = nn.Linear(960, 512)
         self.fc3 = nn.Linear(512, 250)
         
-        self.dropout = nn.Dropout(0.3)
+        self.dropout = nn.Dropout(0.2)
         self.relu = nn.LeakyReLU()
         self.flatten = nn.Flatten()
         

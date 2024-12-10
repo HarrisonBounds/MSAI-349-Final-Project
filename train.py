@@ -24,7 +24,7 @@ resize_width = 120
 resize_height = 120
 #Hyperparameters
 batch_size = 64
-lr = 0.001
+lr = 0.0001
 epochs = 20
 
 # Loading and pre-processing data
