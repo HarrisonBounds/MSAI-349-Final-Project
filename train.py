@@ -23,9 +23,9 @@ test_losses = []
 resize_width = 120
 resize_height = 120
 #Hyperparameters
-batch_size = 32
+batch_size = 64
 lr = 0.001
-epochs = 15
+epochs = 20
 
 # Loading and pre-processing data
 transform = transforms.Compose([
@@ -79,40 +79,41 @@ with open('training_metrics.txt', 'a') as f:
         scheduler.step()
 
         print(f"Epoch {epoch+1}/{epochs}, Loss: {running_loss / len(train_loader):.4f}")
+        
+        #Validation Set Loop
+        model.eval()
 
+        valid_loss = 0.0
+        y_preds = []
+        y_trues = []
+
+        
+        with torch.no_grad():
+            for image, labels in valid_loader:
+                image, y_true = image.to(DEVICE), labels.to(DEVICE)
+                
+                y_pred = model(image)
+                loss = loss_func(y_pred, y_true)
+                valid_loss += loss.item()
+                
+                y_pred = torch.argmax(y_pred, dim=1)
+                
+                y_trues.append(y_true.cpu().numpy())
+                y_preds.append(y_pred.cpu().numpy())
+                
+                f.write(f"Valid Loss: {loss.item()}\n")
+                
+        valid_losses.append(valid_loss / len(valid_loader))
+                
+        y_trues = np.concatenate(y_trues)  # Flatten list of arrays
+        y_preds = np.concatenate(y_preds)  # Flatten list of arrays
+        
     now = datetime.now()
     formatted_time = now.strftime("%Y-%m-%d %H:%M:%S")
     # Save the trained model
     torch.save(model.state_dict(), f'models/{formatted_time}_sketch_cnn.pth')
     print("Training complete and model saved.")
 
-    #Validation Set Loop
-    model.eval()
-
-    valid_loss = 0.0
-    y_preds = []
-    y_trues = []
-
-    
-    with torch.no_grad():
-        for image, labels in valid_loader:
-            image, y_true = image.to(DEVICE), labels.to(DEVICE)
-            
-            y_pred = model(image)
-            loss = loss_func(y_pred, y_true)
-            valid_loss += loss.item()
-            
-            y_pred = torch.argmax(y_pred, dim=1)
-            
-            y_trues.append(y_true.cpu().numpy())
-            y_preds.append(y_pred.cpu().numpy())
-            
-            f.write(f"Valid Loss: {loss.item()}\n")
-            
-    valid_losses.append(valid_loss / len(valid_loader))
-            
-    y_trues = np.concatenate(y_trues)  # Flatten list of arrays
-    y_preds = np.concatenate(y_preds)  # Flatten list of arrays
 
     accuracy = accuracy_score(y_trues, y_preds)
     print(f"Accuracy of validation set: {accuracy}")
@@ -122,7 +123,7 @@ with open('training_metrics.txt', 'a') as f:
     
     f.write(f"Accuracy: {accuracy}\nPrecision: {precision}")
 
-    pilot_title = f'{model._get_name()}-{epochs}epochs-{lr}lr: {formatted_time}'
+    pilot_title = f'{model._get_name()}-{epochs}epochs-{lr}lr: accuracy: {accuracy}, precision: {precision}: {formatted_time}'
     plt.plot(range(epochs), train_losses, 'b--', label='Training')
     plt.plot(range(epochs), valid_losses, 'orange', label='Validation')
     plt.xlabel('Epoch')
