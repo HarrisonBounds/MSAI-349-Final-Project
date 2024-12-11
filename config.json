@@ -1,0 +1,11 @@
+{
+    "image_path": "data/",
+    "augmented_image_path": "modified_data/",
+    "image_dim": 120,
+    "cnn": {
+        "checkpoint": "./checkpoints/cnn/",
+        "learning_rate": 1e-3,
+        "batch_size": 64,
+        "num_classes": 250
+    }
+}

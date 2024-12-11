@@ -25,7 +25,7 @@ resize_height = 120
 # Hyperparameters
 batch_size = 64
 lr = 0.001
-epochs = 10
+epochs = 15
 
 # Loading and pre-processing data
 transform = transforms.Compose([
