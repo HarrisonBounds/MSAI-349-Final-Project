@@ -1,7 +1,8 @@
 import torch
 from torchvision import transforms, datasets
 from torch.utils.data import DataLoader
-from cnn import CNN
+# from cnn import CNN
+from simple_cnn import CNN
 import torch.nn as nn
 import numpy as np
 from datetime import datetime
@@ -50,7 +51,7 @@ test_loader = DataLoader(test_set, batch_size, shuffle=True)
 model = CNN(resize_width, resize_height)
 # Tune this for potential better results
 loss_func = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=0.01)
+optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=0.0001)
 # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 
 print("Number of float-valued parameters:", count_parameters(model))
