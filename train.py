@@ -9,6 +9,8 @@ from datetime import datetime
 # from sketch_interface import Interface
 from sklearn.metrics import accuracy_score, precision_score
 import matplotlib.pyplot as plt
+from PIL import Image
+from custom_dataset import CustomImageDataset
 
 # Interface = Interface()
 # Interface.draw()
@@ -17,6 +19,7 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using {DEVICE} device")
 
 # Loss lists for plotting
+
 train_losses = []
 valid_losses = []
 test_losses = []
@@ -38,6 +41,9 @@ transform = transforms.Compose([
 
 dataset = datasets.ImageFolder("data", transform=transform)
 train_set, valid_set = torch.utils.data.random_split(dataset, [0.85, 0.15])
+
+dataset = CustomImageDataset("sketches.csv", "data", transform)
+
 test_image = "user_sketch.png"
 
 train_loader = DataLoader(train_set, batch_size, shuffle=True)
@@ -113,6 +119,7 @@ with open('training_metrics.txt', 'a') as f:
     formatted_time = now.strftime("%Y-%m-%d %H:%M:%S")
     # Save the trained model
     torch.save(model.state_dict(), f'models/{formatted_time}_sketch_cnn.pth')
+    torch.save(model.state_dict(), f'final_model.pth')
     print("Training complete and model saved.")
 
     accuracy = accuracy_score(y_trues, y_preds)
@@ -132,37 +139,41 @@ with open('training_metrics.txt', 'a') as f:
     plt.title(pilot_title)
     plt.savefig(f'models/{pilot_title}.png')
 
-# # Validation loop
-# # Visualisation section
 
-# # Testing loop
+# Testing loop
+test_transform = transforms.Compose([
+    # Resize to model's input size
+    transforms.Resize((resize_width, resize_height)),
+    transforms.ToTensor(),  # Convert PIL to tensor
+])
 
-# test_transform = transforms.Compose([
-#     # Resize to model's input size
-#     transforms.Resize((image_width, image_height)),
-#     transforms.ToTensor(),  # Convert PIL to tensor
-# ])
+# Load the trained model
+model.load_state_dict(torch.load("final_model.pth"))
+model.eval()  # Set the model to evaluation mode
+print("testing loop...")
+# Process the image and make a prediction
+with torch.no_grad():  # Disable gradient computation for inference
+    # Load and preprocess the image
+    image = Image.open(test_image).convert("L")
+    image = test_transform(image)
+    # Add one axis to the batch dimension
+    image = image.unsqueeze(0).to(DEVICE)
+    # Get the model's prediction
+    output = model(image)
+    probabilities = torch.softmax(output, dim=1)
 
-# # Load the trained model
-# model.load_state_dict(torch.load("final_model.pth"))
-# model.eval()  # Set the model to evaluation mode
-# print("testing loop...")
-# # Process the image and make a prediction
-# with torch.no_grad():  # Disable gradient computation for inference
-#     # Load and preprocess the image
-#     image = Image.open(test_image).convert("L")
-#     image = test_transform(image)
-#     # Add one axis to the batch dimension
-#     image = image.unsqueeze(0).to(DEVICE)
+    # Get the top 10 probabilities and their indices (classes)
+    top_probs, top_indices = torch.topk(probabilities, k=10, dim=1)
 
-#     # Get the model's prediction
-#     output = model(image)
-#     # Get the class index with the highest score
-#     predicted_label = torch.argmax(output, dim=1).item()
-#     print(f"Predicted Label for '{test_image}': {predicted_label} : ")
+    # Detach and convert to CPU for better readability
+    top_probs = top_probs.cpu().numpy()[0]  # Extract the first batch's values
+    top_indices = top_indices.cpu().numpy()[0]
 
-#     for key, value in dataset.label_map.items():
-#         if value == predicted_label:
-#             key_for_value = key
-#             print(f"the image is of : {key}")
-#             break
+    for label_indv, p in zip(top_indices, top_probs):
+
+        print(f"Predicted Label for '{test_image}': {label_indv} : ")
+        for key, value in dataset.label_map.items():
+            if value == label_indv:
+                key_for_value = key
+                print(f"the image is of : {key} with probablity {p*100:3f}%")
+                break
