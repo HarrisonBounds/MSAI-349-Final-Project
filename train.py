@@ -2,6 +2,7 @@ import torch
 from torchvision import transforms, datasets
 from torch.utils.data import DataLoader
 from cnn import CNN
+# from simple_cnn import CNN
 import torch.nn as nn
 import numpy as np
 from datetime import datetime
@@ -45,7 +46,7 @@ valid_loader = DataLoader(valid_set, batch_size, shuffle=True)
 model = CNN(resize_width, resize_height).to(DEVICE)
 # Tune this for potential better results
 loss_func = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=0.0001)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 
 with open('training_metrics.txt', 'a') as f:
