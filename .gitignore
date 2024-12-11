@@ -3,3 +3,4 @@
 __pycache__/
 *.pth
 modified_data
+data/image_data.csv
