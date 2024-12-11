@@ -1,6 +1,7 @@
 # MSAI-349-Final-Project - Identifying Sketches 
 
 **Harrison Bounds, Andrew Kwolek, Sharwin Patil, Sayantani Bhattacharya**
+
 [Google Slides Presentation](https://docs.google.com/presentation/d/1wgdJ8BGGiL-nZCz5TmCijaocPH0_-Bm5D7lpKj9D0js/edit?usp=sharing)
 
 ### Task Decription
