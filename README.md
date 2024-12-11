@@ -1,6 +1,7 @@
 # MSAI-349-Final-Project - Identifying Sketches 
 
 **Harrison Bounds, Andrew Kwolek, Sharwin Patil, Sayantani Bhattacharya**
+[Google Slides Presentation]([url](https://docs.google.com/presentation/d/1wgdJ8BGGiL-nZCz5TmCijaocPH0_-Bm5D7lpKj9D0js/edit?usp=sharing))
 
 ### Task Decription
 The task for this final project is to create a Convolutional Neural Network that can identify sketches from the user. The user will first draw the sketch using a digital canvas. This image will then be used as the input to the CNN. The goal is provide a probability that predicts the sketch the user has drawn. This is a classification task, where each labeled sketch the model is trained on represents a different class.
