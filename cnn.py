@@ -16,12 +16,15 @@ class CNN(nn.Module):
             padding=2)
         self.conv3 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(
             5, 5), stride=(2, 2), padding=2)
+        # self.conv4 = nn.Conv2d(in_channels=128, out_channels=512, kernel_size=(
+        #     5, 5), stride=(2, 2), padding=2)
 
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
 
         self.bn1 = nn.BatchNorm2d(32)
         self.bn2 = nn.BatchNorm2d(64)
         self.bn3 = nn.BatchNorm2d(128)
+        # self.bn4 = nn.BatchNorm2d(512)
 
         self.adaptive_pool = nn.AdaptiveAvgPool2d((4, 4))
 
@@ -30,18 +33,18 @@ class CNN(nn.Module):
         # Calculate image size after the convolutional layers
         # output size: (input_size + 2*padding_size - kernel_size) / stride_size + 1
         input_size = (width, height)
-        size_1 = (((input_size[0] - 5 + 2*2) // 2) +
-                  1), (((input_size[1] - 5 + 2*2) // 2) + 1)
-        size_1_pool = (size_1[0] // 2, size_1[0] // 2)
-        size_2 = (((size_1_pool[0] - 5 + 2*2) // 2) +
-                  1), (((size_1_pool[1] - 5 + 2*2) // 2) + 1)
-        size_2_pool = (size_2[0] // 2, size_2[0] // 2)
-        size_3 = (((size_2_pool[0] - 5 + 2*2) // 2),
-                  ((size_2_pool[1] - 5 + 2*2) // 2) + 1)
+        size_1 = (((input_size[0] - 5 + 2*2) // 1) + 1,
+                  ((input_size[1] - 5 + 2*2) // 1) + 1)
+        size_2 = (((size_1[0] - 5 + 2*2) // 1) + 1,
+                  ((size_1[1] - 5 + 2*2) // 1) + 1)
+        size_3 = (((size_2[0] - 5 + 2*2) // 2) + 1,
+                  ((size_2[1] - 5 + 2*2) // 2) + 1)
+        size_4 = (((size_3[0] - 5 + 2*2) // 2) + 1,
+                  ((size_3[1] - 5 + 2*2) // 2) + 1)
 
         self.fc1 = nn.Linear(in_features=128*4*4, out_features=250)
 
-        self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(0.3)
 
         self.init_weights()
 
@@ -72,6 +75,11 @@ class CNN(nn.Module):
         conv3_out = self.conv3(pool2_out)
         bn3_out = self.bn3(conv3_out)
         relu3_out = F.relu(bn3_out)
+        # pool3_out = self.pool(relu3_out)
+
+        # conv4_out = self.conv4(pool3_out)
+        # bn4_out = self.bn4(conv4_out)
+        # relu4_out = F.relu(bn4_out)
 
         pooled = self.adaptive_pool(relu3_out)
 
