@@ -51,7 +51,7 @@ test_loader = DataLoader(test_set, batch_size, shuffle=True)
 model = CNN(resize_width, resize_height)
 # Tune this for potential better results
 loss_func = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=0.0001)
+optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 
 print("Number of float-valued parameters:", count_parameters(model))
