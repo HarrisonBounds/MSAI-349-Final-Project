@@ -2,6 +2,7 @@ import torch
 from torchvision import transforms, datasets
 from torch.utils.data import DataLoader
 from cnn import CNN
+# from simple_cnn import CNN
 import torch.nn as nn
 import numpy as np
 from datetime import datetime
@@ -28,7 +29,7 @@ resize_height = 120
 # Hyperparameters
 batch_size = 64
 lr = 0.001
-epochs = 10
+epochs = 15
 
 # Loading and pre-processing data
 transform = transforms.Compose([
