@@ -10,12 +10,12 @@ class CNN(nn.Module):
 
         # Convolutional Layers
         self.conv1 = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=(
-            3, 3), stride=(2, 2), padding=2)
+            5, 5), stride=(2, 2), padding=2)
         self.conv2 = nn.Conv2d(
-            in_channels=32, out_channels=64, kernel_size=(3, 3), stride=(2, 2),
+            in_channels=32, out_channels=64, kernel_size=(5, 5), stride=(2, 2),
             padding=2)
         self.conv3 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(
-            3, 3), stride=(2, 2), padding=2)
+            5, 5), stride=(2, 2), padding=2)
 
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
 
@@ -24,8 +24,6 @@ class CNN(nn.Module):
         self.bn3 = nn.BatchNorm2d(128)
 
         self.adaptive_pool = nn.AdaptiveAvgPool2d((4, 4))
-
-        self.fc2 = nn.Linear(250, 250)
 
         # Calculate image size after the convolutional layers
         # output size: (input_size + 2*padding_size - kernel_size) / stride_size + 1
@@ -40,6 +38,7 @@ class CNN(nn.Module):
                   ((size_3[1] - 5 + 2*2) // 2) + 1)
 
         self.fc1 = nn.Linear(in_features=128*4*4, out_features=250)
+        self.fc2 = nn.Linear(250, 250)
 
         self.dropout = nn.Dropout(0.5)
 
@@ -48,7 +47,6 @@ class CNN(nn.Module):
     def init_weights(self):
         torch.manual_seed(42)
         for conv in [self.conv1, self.conv2, self.conv3]:
-            C_in = conv.weight.size(1)
             nn.init.kaiming_normal_(
                 conv.weight, mode='fan_out', nonlinearity='relu')
             nn.init.constant_(conv.bias, 0.0)
